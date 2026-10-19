@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/register",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/rides/:path*",
+      "destination": "/index.html"
+    }
+  ]
+}
