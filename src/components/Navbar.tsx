@@ -20,7 +20,7 @@ export function Navbar() {
           {auth ? (
             <button className="link-button" onClick={handleLogout} type="button">Abmelden</button>
           ) : (
-            <NavLink className="nav-cta" to="/login">Anmelden</NavLink>
+            <a className="nav-cta" href="/login.html">Anmelden</a>
           )}
         </nav>
       </div>
