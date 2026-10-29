@@ -18,6 +18,7 @@ export function Navbar() {
           <NavLink to="/">Fahrten</NavLink>
           {auth ? <NavLink to="/rides/new">Fahrt anbieten</NavLink> : null}
           {auth ? <NavLink to="/bookings">Meine Buchungen</NavLink> : null}
+          {auth ? <NavLink to="/profile">Meine Fahrzeuge</NavLink> : null}
           {auth ? (
             <button className="link-button" onClick={handleLogout} type="button">Abmelden</button>
           ) : (

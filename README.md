@@ -22,6 +22,12 @@ The application uses the following backend endpoints:
 - `VITE_AUTH_API_URL` for login and registration
 - `VITE_RIDE_API_URL` for public rides and creating rides
 - `VITE_BOOKING_API_URL` for future booking functionality
+- `VITE_PROFILE_API_URL` for vehicle data and profile cars (for local development,
+  run the profile service at `http://localhost:8084`)
+
+Sign in before opening **Meine Fahrzeuge**. The protected vehicle flow uses the
+stored access token for listing and saving cars, and loads year, make, model,
+option, and vehicle details from the profile service's Fuel-Economy endpoints.
 
 The application is available at `http://localhost:5173`.
 

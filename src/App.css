@@ -184,6 +184,13 @@ h2 {
   color: #aa3030;
 }
 
+.success-message {
+  background: #ecfdf3;
+  border-radius: 12px;
+  color: #187044;
+  padding: 16px;
+}
+
 .form-card {
   margin: 40px auto;
   max-width: 440px;
@@ -217,9 +224,77 @@ h2 {
   width: 100%;
 }
 
+.form select {
+  background: var(--background);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  box-sizing: border-box;
+  color: var(--ink);
+  font: inherit;
+  padding: 11px 12px;
+  width: 100%;
+}
+
 .form input:focus {
   border-color: var(--accent);
   outline: 3px solid rgba(234, 88, 12, 0.16);
+}
+
+.form select:focus {
+  border-color: var(--accent);
+  outline: 3px solid rgba(234, 88, 12, 0.16);
+}
+
+.profile-heading {
+  align-items: end;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.profile-heading h1 {
+  margin-bottom: 0;
+}
+
+.vehicle-card h2 {
+  margin-top: 12px;
+}
+
+.vehicle-form-card {
+  max-width: 640px;
+}
+
+.vehicle-form-card .lead {
+  margin-bottom: 24px;
+}
+
+.back-link {
+  color: var(--accent-dark);
+  display: inline-block;
+  font-weight: 700;
+  margin-bottom: 24px;
+  text-decoration: none;
+}
+
+.vehicle-details {
+  background: var(--background);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.vehicle-details h2,
+.vehicle-details p {
+  margin: 0;
+}
+
+.vehicle-stat-grid {
+  display: grid;
+  gap: 8px 18px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
 button,
@@ -309,4 +384,18 @@ button:disabled {
 .secondary-button:hover {
   background: #e7e5e4;
   color: var(--ink);
+}
+
+@media (max-width: 700px) {
+  .navbar-inner,
+  .profile-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 16px 0;
+  }
+
+  nav {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
 }
