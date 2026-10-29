@@ -35,12 +35,27 @@ export function CreateRidePage() {
         <span className="eyebrow">Neue Route</span>
         <h1>Fahrt anbieten</h1>
         <form className="form" onSubmit={handleSubmit}>
-          <label>Start<input required value={form.startLocation} onChange={(event) => update('startLocation', event.target.value)} /></label>
-          <label>Ziel<input required value={form.endLocation} onChange={(event) => update('endLocation', event.target.value)} /></label>
-          <label>Abfahrt<input required type="datetime-local" value={form.departureTime} onChange={(event) => update('departureTime', event.target.value)} /></label>
-          <label>Freie Plätze<input required min="1" type="number" value={form.availableSeats} onChange={(event) => update('availableSeats', event.target.value)} /></label>
+
+          <label>Start
+          <input required value={form.startLocation} onChange={(event) => update('startLocation', event.target.value)} />
+          </label>
+
+          <label>Ziel
+          <input required value={form.endLocation} onChange={(event) => update('endLocation', event.target.value)} />
+          </label>
+
+          <label>Abfahrt
+          <input required type="datetime-local" value={form.departureTime} onChange={(event) => update('departureTime', event.target.value)} />
+          </label>
+
+          <label>Freie Plätze
+          <input required min="1" type="number" value={form.availableSeats} onChange={(event) => update('availableSeats', event.target.value)} />
+          </label>
+
           {error ? <p className="error-message" role="alert">{error}</p> : null}
-          <button disabled={submitting} type="submit">{submitting ? 'Wird veröffentlicht ...' : 'Fahrt veröffentlichen'}</button>
+
+          <button disabled={submitting} type="submit">{submitting ? 'Wird veröffentlicht ...' : 'Fahrt veröffentlichen'}
+          </button>
         </form>
       </section>
     </main>

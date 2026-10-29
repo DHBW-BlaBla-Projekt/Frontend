@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { createBooking } from '../api/bookingApi'
 import { getAvailableRides, type Ride } from '../api/rideApi'
+import { useAuth } from '../context/useAuth'
 
 const dateFormatter = new Intl.DateTimeFormat('de-DE', {
   dateStyle: 'medium',
@@ -7,16 +10,57 @@ const dateFormatter = new Intl.DateTimeFormat('de-DE', {
 })
 
 export function RidesPage() {
+  const { auth } = useAuth()
+  const navigate = useNavigate()
   const [rides, setRides] = useState<Ride[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+  const [bookingRideId, setBookingRideId] = useState<number | null>(null)
+
+  async function loadRides() {
+    try {
+      const nextRides = await getAvailableRides()
+      setRides(nextRides)
+      setError('')
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Fahrten konnten nicht geladen werden.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    getAvailableRides()
-      .then(setRides)
-      .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : 'Fahrten konnten nicht geladen werden.'))
-      .finally(() => setLoading(false))
+    void loadRides()
   }, [])
+
+  async function handleBookRide(ride: Ride) {
+    if (!auth) {
+      navigate('/login')
+      return
+    }
+
+    if (ride.driverUsername === auth.username) {
+      setError('Du kannst deine eigene Fahrt nicht buchen.')
+      return
+    }
+
+    if (ride.availableSeats <= 0) {
+      setError('Für diese Mitfahrt sind keine Plätze mehr verfügbar.')
+      return
+    }
+
+    setBookingRideId(ride.id)
+    setError('')
+
+    try {
+      await createBooking(ride.id, auth.accessToken)
+      await loadRides()
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Die Buchung konnte nicht erstellt werden.')
+    } finally {
+      setBookingRideId(null)
+    }
+  }
 
   return (
     <main className="app-shell page">
@@ -40,6 +84,20 @@ export function RidesPage() {
               <div className="ride-meta">
                 <p>{dateFormatter.format(new Date(ride.departureTime))}</p>
                 <p>{ride.availableSeats} freie Plätze · Fahrer: {ride.driverUsername}</p>
+              </div>
+
+              <div className="ride-actions">
+                {auth ? (
+                  ride.driverUsername === auth.username ? (
+                    <span className="ride-badge">Deine Fahrt</span>
+                  ) : (
+                    <button type="button" disabled={bookingRideId === ride.id} onClick={() => void handleBookRide(ride)}>
+                      {bookingRideId === ride.id ? 'Buchung...' : 'Fahrt buchen'}
+                    </button>
+                  )
+                ) : (
+                  <Link className="button button-secondary" to="/login">Zum Buchen anmelden</Link>
+                )}
               </div>
             </article>
           ))}

@@ -11,6 +11,10 @@
     {
       "source": "/rides/:path*",
       "destination": "/index.html"
+    },
+    {
+      "source": "/bookings",
+      "destination": "/index.html"
     }
   ]
 }
