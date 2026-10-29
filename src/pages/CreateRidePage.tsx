@@ -8,7 +8,14 @@ export function CreateRidePage() {
   const navigate = useNavigate()
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [form, setForm] = useState({ startLocation: '', endLocation: '', departureTime: '', availableSeats: '1' })
+  const [form, setForm] = useState({
+    startLocation: '',
+    endLocation: '',
+    departureTime: '',
+    availableSeats: '1',
+    distanceKm: '',
+    carId: '',
+  })
 
   function update(field: keyof typeof form, value: string) {
     setForm((current) => ({ ...current, [field]: value }))
@@ -20,7 +27,12 @@ export function CreateRidePage() {
     setError('')
     setSubmitting(true)
     try {
-      await createRide({ ...form, availableSeats: Number(form.availableSeats) }, auth.accessToken)
+      await createRide({
+        ...form,
+        availableSeats: Number(form.availableSeats),
+        distanceKm: Number(form.distanceKm),
+        carId: Number(form.carId),
+      }, auth.accessToken)
       navigate('/')
     } catch (reason: unknown) {
       setError(reason instanceof Error ? reason.message : 'Fahrt konnte nicht erstellt werden.')
@@ -50,6 +62,14 @@ export function CreateRidePage() {
 
           <label>Freie Plätze
           <input required min="1" type="number" value={form.availableSeats} onChange={(event) => update('availableSeats', event.target.value)} />
+          </label>
+
+          <label>Entfernung (km)
+          <input required min="0.1" step="0.1" type="number" value={form.distanceKm} onChange={(event) => update('distanceKm', event.target.value)} />
+          </label>
+
+          <label>Fahrzeug-ID
+          <input required min="1" type="number" value={form.carId} onChange={(event) => update('carId', event.target.value)} />
           </label>
 
           {error ? <p className="error-message" role="alert">{error}</p> : null}

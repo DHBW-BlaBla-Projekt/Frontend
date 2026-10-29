@@ -22,6 +22,8 @@ export function createRide(
     endLocation: string
     departureTime: string
     availableSeats: number
+    distanceKm: number
+    carId: number
   },
   token: string,
 ) {
