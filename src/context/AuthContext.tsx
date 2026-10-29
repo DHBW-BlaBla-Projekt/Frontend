@@ -3,11 +3,28 @@ import type { AuthResponse } from '../api/authApi'
 import { AuthContext, type AuthContextValue } from './context'
 const AUTH_STORAGE_KEY = 'blabla-auth'
 
+function isExpiredAccessToken(accessToken: string) {
+  const payload = accessToken.split('.')[1]
+  if (!payload) return true
+
+  try {
+    const claims = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))) as { exp?: unknown }
+    return typeof claims.exp !== 'number' || claims.exp <= Date.now() / 1000
+  } catch {
+    return true
+  }
+}
+
 function readStoredAuth(): AuthResponse | null {
   const stored = localStorage.getItem(AUTH_STORAGE_KEY)
   if (!stored) return null
   try {
-    return JSON.parse(stored) as AuthResponse
+    const auth = JSON.parse(stored) as AuthResponse
+    if (!auth.accessToken || isExpiredAccessToken(auth.accessToken)) {
+      localStorage.removeItem(AUTH_STORAGE_KEY)
+      return null
+    }
+    return auth
   } catch {
     localStorage.removeItem(AUTH_STORAGE_KEY)
     return null
