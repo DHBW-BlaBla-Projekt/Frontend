@@ -22,8 +22,15 @@ export async function apiRequest<T>(
   })
 
   if (!response.ok) {
-    const message = await response.text()
-    throw new Error(message || `HTTP ${response.status}`)
+    const body = await response.text()
+    let message: string | undefined
+    try {
+      const parsed = JSON.parse(body) as { error?: string; message?: string }
+      message = parsed.error || parsed.message
+    } catch {
+      // Fall back to the raw response when the server did not return JSON.
+    }
+    throw new Error(message || body || `HTTP ${response.status}`)
   }
   if (response.status === 204) {
     return undefined as T
