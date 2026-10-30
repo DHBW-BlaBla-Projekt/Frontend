@@ -18,6 +18,7 @@ export function RidesPage() {
   const [bookingRideId, setBookingRideId] = useState<number | null>(null)
   const [bookedRideIds, setBookedRideIds] = useState<Set<number>>(new Set())
   const [now] = useState(() => Date.now())
+  const [filter, setFilter] = useState('')
 
   async function loadRides() {
     try {
@@ -83,6 +84,11 @@ export function RidesPage() {
   }
 
   const activeRides = rides.filter((ride) => new Date(ride.departureTime).getTime() > now)
+  const normalizedFilter = filter.trim().toLocaleLowerCase('de-DE')
+  const filteredRides = activeRides.filter((ride) => {
+    if (!normalizedFilter) return true
+    return `${ride.startLocation} ${ride.endLocation}`.toLocaleLowerCase('de-DE').includes(normalizedFilter)
+  })
 
   return (
     <main className="app-shell page">
@@ -93,11 +99,21 @@ export function RidesPage() {
       </section>
       <section aria-labelledby="available-rides">
         <h2 id="available-rides">Verfügbare Fahrten</h2>
+        <label htmlFor="ride-filter">
+          Fahrten filtern
+          <input
+            id="ride-filter"
+            type="search"
+            value={filter}
+            placeholder="Start oder Ziel"
+            onChange={(event) => setFilter(event.target.value)}
+          />
+        </label>
         {loading ? <p className="empty-state">Fahrten werden geladen ...</p> : null}
         {error ? <p className="error-message" role="alert">Fehler: {error}</p> : null}
-        {!loading && !error && activeRides.length === 0 ? <p className="empty-state">Aktuell sind keine Fahrten verfügbar.</p> : null}
+        {!loading && !error && filteredRides.length === 0 ? <p className="empty-state">Keine passenden Fahrten gefunden.</p> : null}
         <div className="ride-grid">
-          {activeRides.map((ride) => (
+          {filteredRides.map((ride) => (
             <article className="card" key={ride.id}>
               <span className="eyebrow">{ride.status}</span>
               <div className="route">
