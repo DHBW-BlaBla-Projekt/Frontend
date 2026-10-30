@@ -22,7 +22,15 @@ export async function apiRequest<T>(
   })
 
   if (!response.ok) {
-    const message = await response.text()
+    const body = await response.text()
+    let message = body
+    try {
+      const parsed = JSON.parse(body) as { error?: unknown; message?: unknown }
+      if (typeof parsed.error === 'string') message = parsed.error
+      else if (typeof parsed.message === 'string') message = parsed.message
+    } catch {
+      // Keep plain-text backend responses unchanged.
+    }
     throw new Error(message || `HTTP ${response.status}`)
   }
   if (response.status === 204) {
