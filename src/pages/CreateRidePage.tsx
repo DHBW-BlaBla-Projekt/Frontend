@@ -1,5 +1,6 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getMyCars, type Car } from '../api/profileApi'
 import { createRide } from '../api/rideApi'
 import { useAuth } from '../context/useAuth'
 
@@ -8,6 +9,8 @@ export function CreateRidePage() {
   const navigate = useNavigate()
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [cars, setCars] = useState<Car[]>([])
+  const [loadingCars, setLoadingCars] = useState(true)
   const [form, setForm] = useState({
     startLocation: '',
     endLocation: '',
@@ -16,6 +19,20 @@ export function CreateRidePage() {
     distanceKm: '',
     carId: '',
   })
+
+  useEffect(() => {
+    if (!auth) {
+      setLoadingCars(false)
+      return
+    }
+
+    getMyCars(auth.accessToken)
+      .then(setCars)
+      .catch((reason: unknown) => {
+        setError(reason instanceof Error ? reason.message : 'Fahrzeuge konnten nicht geladen werden.')
+      })
+      .finally(() => setLoadingCars(false))
+  }, [auth])
 
   function update(field: keyof typeof form, value: string) {
     setForm((current) => ({ ...current, [field]: value }))
@@ -68,13 +85,34 @@ export function CreateRidePage() {
           <input required min="0.1" step="0.1" type="number" value={form.distanceKm} onChange={(event) => update('distanceKm', event.target.value)} />
           </label>
 
-          <label>Fahrzeug-ID
-          <input required min="1" type="number" value={form.carId} onChange={(event) => update('carId', event.target.value)} />
+          <label htmlFor="carId">Fahrzeug
+          <select
+            id="carId"
+            required
+            value={form.carId}
+            disabled={loadingCars || cars.length === 0}
+            onChange={(event) => update('carId', event.target.value)}
+          >
+            <option value="">
+              {loadingCars ? 'Fahrzeuge werden geladen ...' : 'Fahrzeug auswählen'}
+            </option>
+            {cars.map((car) => (
+              <option key={car.id} value={car.id}>
+                {car.name || `${car.brand} ${car.model}`} (ID: {car.id})
+              </option>
+            ))}
+          </select>
           </label>
+
+          {!loadingCars && cars.length === 0 && !error ? (
+            <p className="error-message" role="alert">
+              Du musst zuerst ein Fahrzeug in deinem Profil anlegen.
+            </p>
+          ) : null}
 
           {error ? <p className="error-message" role="alert">{error}</p> : null}
 
-          <button disabled={submitting} type="submit">{submitting ? 'Wird veröffentlicht ...' : 'Fahrt veröffentlichen'}
+          <button disabled={submitting || loadingCars || cars.length === 0} type="submit">{submitting ? 'Wird veröffentlicht ...' : 'Fahrt veröffentlichen'}
           </button>
         </form>
       </section>
