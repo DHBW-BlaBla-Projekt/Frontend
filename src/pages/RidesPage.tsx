@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { createBooking } from '../api/bookingApi'
+import { createBooking, getMyBookings } from '../api/bookingApi'
 import { getAvailableRides, type Ride } from '../api/rideApi'
 import { useAuth } from '../context/useAuth'
 
@@ -16,6 +16,8 @@ export function RidesPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [bookingRideId, setBookingRideId] = useState<number | null>(null)
+  const [bookedRideIds, setBookedRideIds] = useState<Set<number>>(new Set())
+  const [now] = useState(() => Date.now())
 
   async function loadRides() {
     try {
@@ -32,6 +34,23 @@ export function RidesPage() {
   useEffect(() => {
     void loadRides()
   }, [])
+
+  useEffect(() => {
+    if (!auth) {
+      setBookedRideIds(new Set())
+      return
+    }
+
+    void getMyBookings(auth.accessToken)
+      .then((bookings) => setBookedRideIds(new Set(
+        bookings
+          .filter((booking) => booking.status === 'CONFIRMED')
+          .map((booking) => booking.rideId),
+      )))
+      .catch(() => {
+        setBookedRideIds(new Set())
+      })
+  }, [auth])
 
   async function handleBookRide(ride: Ride) {
     if (!auth) {
@@ -54,6 +73,7 @@ export function RidesPage() {
 
     try {
       await createBooking(ride.id, auth.accessToken)
+      setBookedRideIds((current) => new Set(current).add(ride.id))
       await loadRides()
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Die Buchung konnte nicht erstellt werden.')
@@ -61,6 +81,8 @@ export function RidesPage() {
       setBookingRideId(null)
     }
   }
+
+  const activeRides = rides.filter((ride) => new Date(ride.departureTime).getTime() > now)
 
   return (
     <main className="app-shell page">
@@ -73,9 +95,9 @@ export function RidesPage() {
         <h2 id="available-rides">Verfügbare Fahrten</h2>
         {loading ? <p className="empty-state">Fahrten werden geladen ...</p> : null}
         {error ? <p className="error-message" role="alert">Fehler: {error}</p> : null}
-        {!loading && !error && rides.length === 0 ? <p className="empty-state">Aktuell sind keine Fahrten verfügbar.</p> : null}
+        {!loading && !error && activeRides.length === 0 ? <p className="empty-state">Aktuell sind keine Fahrten verfügbar.</p> : null}
         <div className="ride-grid">
-          {rides.map((ride) => (
+          {activeRides.map((ride) => (
             <article className="card" key={ride.id}>
               <span className="eyebrow">{ride.status}</span>
               <div className="route">
@@ -90,6 +112,8 @@ export function RidesPage() {
                 {auth ? (
                   ride.driverUsername === auth.username ? (
                     <span className="ride-badge">Deine Fahrt</span>
+                  ) : bookedRideIds.has(ride.id) ? (
+                    <span className="ride-badge">Bereits gebucht</span>
                   ) : (
                     <button type="button" disabled={bookingRideId === ride.id} onClick={() => void handleBookRide(ride)}>
                       {bookingRideId === ride.id ? 'Buchung...' : 'Fahrt buchen'}
