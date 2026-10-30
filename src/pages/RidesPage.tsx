@@ -58,7 +58,7 @@ export function RidesPage() {
       return
     }
 
-    if (ride.driverUsername === auth.username) {
+    if (ride.driverUsername.localeCompare(auth.username, undefined, { sensitivity: 'accent' }) === 0) {
       setError('Du kannst deine eigene Fahrt nicht buchen.')
       return
     }
@@ -110,7 +110,7 @@ export function RidesPage() {
 
               <div className="ride-actions">
                 {auth ? (
-                  ride.driverUsername === auth.username ? (
+                  ride.driverUsername.localeCompare(auth.username, undefined, { sensitivity: 'accent' }) === 0 ? (
                     <span className="ride-badge">Deine Fahrt</span>
                   ) : bookedRideIds.has(ride.id) ? (
                     <span className="ride-badge">Bereits gebucht</span>
