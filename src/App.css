@@ -174,31 +174,48 @@ h2 {
 .route-map {
   background: #dce8e2;
   border-radius: 12px;
-  height: 220px;
+  height: 320px;
   margin-bottom: 18px;
   overflow: hidden;
   position: relative;
 }
 
-.route-map-tiles {
-  height: 100%;
-  inset: 0;
-  overflow: hidden;
-  position: absolute;
-}
-
-.route-map-tile {
-  height: 256px;
-  max-width: none;
-  position: absolute;
-  width: 256px;
-}
-
 .route-map-overlay {
+  cursor: grab;
   height: 100%;
   inset: 0;
   position: absolute;
+  touch-action: none;
   width: 100%;
+}
+
+.route-map-overlay:active {
+  cursor: grabbing;
+}
+
+.route-map-controls {
+  display: grid;
+  gap: 4px;
+  position: absolute;
+  right: 8px;
+  top: 8px;
+}
+
+.route-map-controls button {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  color: #374151;
+  font-size: 1.2rem;
+  line-height: 1;
+  min-height: 32px;
+  padding: 4px 10px;
+}
+
+.route-map-controls button:hover {
+  background: white;
+  color: #111827;
+  transform: none;
 }
 
 .route-map-attribution {

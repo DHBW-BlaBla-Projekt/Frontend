@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 interface RouteMapProps {
   geometry: string
@@ -27,6 +27,13 @@ interface MapTile {
   url: string
   left: number
   top: number
+}
+
+interface Viewport {
+  x: number
+  y: number
+  width: number
+  height: number
 }
 
 function project(longitude: number, latitude: number, zoom: number): ProjectedPoint {
@@ -151,7 +158,11 @@ export function RouteMap({ geometry, start, end }: RouteMapProps) {
         points: points.map(projectForMap),
         start: projectForMap({ longitude: start[1], latitude: start[0] }),
         end: projectForMap({ longitude: end[1], latitude: end[0] }),
-        tiles: getTiles(center, zoom),
+        tiles: getTiles(center, zoom).map((tile) => ({
+          ...tile,
+          left: tile.left,
+          top: tile.top,
+        })),
         bounds: routeBounds,
       }
     } catch (reason) {
@@ -160,25 +171,103 @@ export function RouteMap({ geometry, start, end }: RouteMapProps) {
     }
   }, [geometry, start, end])
 
+  const [viewport, setViewport] = useState<Viewport>({
+    x: 0,
+    y: 0,
+    width: WIDTH,
+    height: HEIGHT,
+  })
+  const dragStart = useRef<{ pointerX: number; pointerY: number; viewport: Viewport } | null>(null)
+
   if ('error' in route) {
     return <p className="error-message" role="alert">{route.error}</p>
   }
 
   const points = route.points.map((point) => `${point.x},${point.y}`).join(' ')
+  const zoom = (factor: number, focalPoint = { x: WIDTH / 2, y: HEIGHT / 2 }) => {
+    setViewport((current) => {
+      const nextWidth = Math.max(WIDTH / 4, Math.min(WIDTH, current.width * factor))
+      const nextHeight = Math.max(HEIGHT / 4, Math.min(HEIGHT, current.height * factor))
+      const relativeX = (focalPoint.x - current.x) / current.width
+      const relativeY = (focalPoint.y - current.y) / current.height
+      const nextX = focalPoint.x - relativeX * nextWidth
+      const nextY = focalPoint.y - relativeY * nextHeight
+
+      return {
+        x: Math.max(0, Math.min(WIDTH - nextWidth, nextX)),
+        y: Math.max(0, Math.min(HEIGHT - nextHeight, nextY)),
+        width: nextWidth,
+        height: nextHeight,
+      }
+    })
+  }
+
   return (
     <div className="route-map" aria-label={`Karte der Fahrstrecke von ${route.bounds.minLatitude.toFixed(3)}, ${route.bounds.minLongitude.toFixed(3)} nach ${route.bounds.maxLatitude.toFixed(3)}, ${route.bounds.maxLongitude.toFixed(3)}`}>
-      <div className="route-map-tiles" aria-hidden="true">
+      <svg
+        className="route-map-overlay"
+        viewBox={`${viewport.x} ${viewport.y} ${viewport.width} ${viewport.height}`}
+        role="img"
+        aria-label="Visualisierung der gespeicherten Fahrstrecke. Ziehen zum Verschieben, Mausrad zum Zoomen."
+        onClick={(event) => {
+          event.stopPropagation()
+        }}
+        onWheel={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
+          const bounds = event.currentTarget.getBoundingClientRect()
+          const focalPoint = {
+            x: viewport.x + ((event.clientX - bounds.left) / bounds.width) * viewport.width,
+            y: viewport.y + ((event.clientY - bounds.top) / bounds.height) * viewport.height,
+          }
+          zoom(event.deltaY > 0 ? 1.15 : 0.87, focalPoint)
+        }}
+        onPointerDown={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
+          event.currentTarget.setPointerCapture(event.pointerId)
+          dragStart.current = {
+            pointerX: event.clientX,
+            pointerY: event.clientY,
+            viewport,
+          }
+        }}
+        onPointerMove={(event) => {
+          if (!dragStart.current) {
+            return
+          }
+          event.preventDefault()
+          const bounds = event.currentTarget.getBoundingClientRect()
+          const scaleX = viewport.width / bounds.width
+          const scaleY = viewport.height / bounds.height
+          const deltaX = (event.clientX - dragStart.current.pointerX) * scaleX
+          const deltaY = (event.clientY - dragStart.current.pointerY) * scaleY
+          const initial = dragStart.current.viewport
+          setViewport({
+            ...initial,
+            x: Math.max(0, Math.min(WIDTH - initial.width, initial.x - deltaX)),
+            y: Math.max(0, Math.min(HEIGHT - initial.height, initial.y - deltaY)),
+          })
+        }}
+        onPointerUp={(event) => {
+          dragStart.current = null
+          event.currentTarget.releasePointerCapture(event.pointerId)
+        }}
+        onPointerCancel={() => {
+          dragStart.current = null
+        }}
+      >
         {route.tiles.map((tile) => (
-          <img
+          <image
             key={tile.key}
-            className="route-map-tile"
-            src={tile.url}
-            alt=""
-            style={{ left: tile.left, top: tile.top }}
+            href={tile.url}
+            x={tile.left}
+            y={tile.top}
+            width={TILE_SIZE}
+            height={TILE_SIZE}
+            preserveAspectRatio="none"
           />
         ))}
-      </div>
-      <svg className="route-map-overlay" viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-label="Visualisierung der gespeicherten Fahrstrecke">
         <polyline points={points} fill="none" stroke="#ffffff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="12" />
         <polyline points={points} fill="none" stroke="#ea580c" strokeLinecap="round" strokeLinejoin="round" strokeWidth="6" />
         <circle cx={route.start.x} cy={route.start.y} r="11" fill="#22c55e" stroke="#166534" strokeWidth="4" />
@@ -186,6 +275,16 @@ export function RouteMap({ geometry, start, end }: RouteMapProps) {
         <text x={route.start.x + 16} y={route.start.y - 14} fill="#166534" fontSize="18" fontWeight="700">Start</text>
         <text x={route.end.x + 16} y={route.end.y - 14} fill="#991b1b" fontSize="18" fontWeight="700">Ziel</text>
       </svg>
+      <div className="route-map-controls" aria-label="Kartensteuerung">
+        <button type="button" aria-label="Karte vergrößern" onClick={(event) => {
+          event.stopPropagation()
+          zoom(0.75)
+        }}>+</button>
+        <button type="button" aria-label="Karte verkleinern" onClick={(event) => {
+          event.stopPropagation()
+          zoom(1.33)
+        }}>−</button>
+      </div>
       <span className="route-map-attribution">© OpenStreetMap-Mitwirkende</span>
     </div>
   )
