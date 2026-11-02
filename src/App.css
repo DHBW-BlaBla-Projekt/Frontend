@@ -140,6 +140,21 @@ h2 {
   padding: 24px;
 }
 
+.card-clickable {
+  cursor: pointer;
+}
+
+.card-clickable:focus-visible {
+  outline: 3px solid rgba(234, 88, 12, 0.35);
+}
+
+.route-link {
+  color: var(--accent-dark);
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0 0 18px;
+}
+
 .route {
   align-items: center;
   display: flex;
@@ -157,10 +172,43 @@ h2 {
 }
 
 .route-map {
+  background: #dce8e2;
   border-radius: 12px;
   height: 220px;
   margin-bottom: 18px;
   overflow: hidden;
+  position: relative;
+}
+
+.route-map-tiles {
+  height: 100%;
+  inset: 0;
+  overflow: hidden;
+  position: absolute;
+}
+
+.route-map-tile {
+  height: 256px;
+  max-width: none;
+  position: absolute;
+  width: 256px;
+}
+
+.route-map-overlay {
+  height: 100%;
+  inset: 0;
+  position: absolute;
+  width: 100%;
+}
+
+.route-map-attribution {
+  background: rgba(255, 255, 255, 0.82);
+  bottom: 3px;
+  color: #374151;
+  font-size: 0.62rem;
+  padding: 2px 4px;
+  position: absolute;
+  right: 3px;
 }
 
 .ride-meta {

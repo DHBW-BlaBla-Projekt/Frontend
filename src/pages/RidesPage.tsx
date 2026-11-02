@@ -17,6 +17,17 @@ export function RidesPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [bookingRideId, setBookingRideId] = useState<number | null>(null)
+  const [expandedRideId, setExpandedRideId] = useState<number | null>(null)
+
+  function hasRoute(ride: Ride) {
+    return Boolean(
+      ride.routeGeometry
+      && ride.startLatitude !== null
+      && ride.startLongitude !== null
+      && ride.endLatitude !== null
+      && ride.endLongitude !== null,
+    )
+  }
 
   async function loadRides() {
     try {
@@ -77,22 +88,35 @@ export function RidesPage() {
         {!loading && !error && rides.length === 0 ? <p className="empty-state">Aktuell sind keine Fahrten verfügbar.</p> : null}
         <div className="ride-grid">
           {rides.map((ride) => (
-            <article className="card" key={ride.id}>
+            <article
+              className={`card${hasRoute(ride) ? ' card-clickable' : ''}`}
+              key={ride.id}
+              onClick={() => {
+                if (hasRoute(ride)) {
+                  setExpandedRideId((current) => current === ride.id ? null : ride.id)
+                }
+              }}
+              onKeyDown={(event) => {
+                if (hasRoute(ride) && (event.key === 'Enter' || event.key === ' ')) {
+                  event.preventDefault()
+                  setExpandedRideId(ride.id)
+                }
+              }}
+              role={hasRoute(ride) ? 'button' : undefined}
+              tabIndex={hasRoute(ride) ? 0 : undefined}
+            >
               <span className="eyebrow">{ride.status}</span>
               <div className="route">
                 <strong>{ride.startLocation}</strong><span aria-hidden="true">→</span><strong>{ride.endLocation}</strong>
               </div>
-              {ride.routeGeometry
-                && ride.startLatitude !== null
-                && ride.startLongitude !== null
-                && ride.endLatitude !== null
-                && ride.endLongitude !== null ? (
-                  <RouteMap
-                    geometry={ride.routeGeometry}
-                    start={[ride.startLatitude, ride.startLongitude]}
-                    end={[ride.endLatitude, ride.endLongitude]}
-                  />
-                ) : null}
+              {hasRoute(ride) ? <p className="route-link">Strecke auf Karte anzeigen</p> : null}
+              {expandedRideId === ride.id && hasRoute(ride) ? (
+                <RouteMap
+                  geometry={ride.routeGeometry!}
+                  start={[ride.startLatitude!, ride.startLongitude!]}
+                  end={[ride.endLatitude!, ride.endLongitude!]}
+                />
+              ) : null}
               {ride.routeDistanceKm !== null && ride.routeDurationMinutes !== null ? (
                 <p className="route-summary">
                   {ride.routeDistanceKm.toFixed(1)} km · ca. {Math.round(ride.routeDurationMinutes)} min
@@ -108,7 +132,10 @@ export function RidesPage() {
                   ride.driverUsername === auth.username ? (
                     <span className="ride-badge">Deine Fahrt</span>
                   ) : (
-                    <button type="button" disabled={bookingRideId === ride.id} onClick={() => void handleBookRide(ride)}>
+                    <button type="button" disabled={bookingRideId === ride.id} onClick={(event) => {
+                      event.stopPropagation()
+                      void handleBookRide(ride)
+                    }}>
                       {bookingRideId === ride.id ? 'Buchung...' : 'Fahrt buchen'}
                     </button>
                   )
