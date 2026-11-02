@@ -156,6 +156,13 @@ h2 {
   color: var(--accent);
 }
 
+.route-map {
+  border-radius: 12px;
+  height: 220px;
+  margin-bottom: 18px;
+  overflow: hidden;
+}
+
 .ride-meta {
   border-top: 1px solid var(--line);
   color: var(--muted);

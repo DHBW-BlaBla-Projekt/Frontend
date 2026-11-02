@@ -23,6 +23,10 @@ The application uses the following backend endpoints:
 - `VITE_RIDE_API_URL` for public rides and creating rides
 - `VITE_BOOKING_API_URL` for future booking functionality
 
+Routes are calculated by the ride-offer backend with OpenRouteService when a
+ride is created. The backend stores the route geometry, coordinates, distance,
+and duration; the frontend renders these values with Leaflet and OpenStreetMap.
+
 The application is available at `http://localhost:5173`.
 
 Open `http://localhost:5173/login.html` to test the MPA login directly. Vite

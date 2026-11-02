@@ -16,7 +16,6 @@ export function CreateRidePage() {
     endLocation: '',
     departureTime: '',
     availableSeats: '1',
-    distanceKm: '',
     carId: '',
   })
 
@@ -47,7 +46,6 @@ export function CreateRidePage() {
       await createRide({
         ...form,
         availableSeats: Number(form.availableSeats),
-        distanceKm: Number(form.distanceKm),
         carId: Number(form.carId),
       }, auth.accessToken)
       navigate('/')
@@ -79,10 +77,6 @@ export function CreateRidePage() {
 
           <label>Freie Plätze
           <input required min="1" type="number" value={form.availableSeats} onChange={(event) => update('availableSeats', event.target.value)} />
-          </label>
-
-          <label>Entfernung (km)
-          <input required min="0.1" step="0.1" type="number" value={form.distanceKm} onChange={(event) => update('distanceKm', event.target.value)} />
           </label>
 
           <label htmlFor="carId">Fahrzeug

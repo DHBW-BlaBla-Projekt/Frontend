@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { createBooking } from '../api/bookingApi'
 import { getAvailableRides, type Ride } from '../api/rideApi'
+import { RouteMap } from '../components/RouteMap'
 import { useAuth } from '../context/useAuth'
 
 const dateFormatter = new Intl.DateTimeFormat('de-DE', {
@@ -81,6 +82,22 @@ export function RidesPage() {
               <div className="route">
                 <strong>{ride.startLocation}</strong><span aria-hidden="true">→</span><strong>{ride.endLocation}</strong>
               </div>
+              {ride.routeGeometry
+                && ride.startLatitude !== null
+                && ride.startLongitude !== null
+                && ride.endLatitude !== null
+                && ride.endLongitude !== null ? (
+                  <RouteMap
+                    geometry={ride.routeGeometry}
+                    start={[ride.startLatitude, ride.startLongitude]}
+                    end={[ride.endLatitude, ride.endLongitude]}
+                  />
+                ) : null}
+              {ride.routeDistanceKm !== null && ride.routeDurationMinutes !== null ? (
+                <p className="route-summary">
+                  {ride.routeDistanceKm.toFixed(1)} km · ca. {Math.round(ride.routeDurationMinutes)} min
+                </p>
+              ) : null}
               <div className="ride-meta">
                 <p>{dateFormatter.format(new Date(ride.departureTime))}</p>
                 <p>{ride.availableSeats} freie Plätze · Fahrer: {ride.driverUsername}</p>

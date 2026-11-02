@@ -10,6 +10,13 @@ export interface Ride {
   departureTime: string
   availableSeats: number
   status: string
+  startLatitude: number | null
+  startLongitude: number | null
+  endLatitude: number | null
+  endLongitude: number | null
+  routeGeometry: string | null
+  routeDistanceKm: number | null
+  routeDurationMinutes: number | null
 }
 
 export function getAvailableRides() {
@@ -22,7 +29,6 @@ export function createRide(
     endLocation: string
     departureTime: string
     availableSeats: number
-    distanceKm: number
     carId: number
   },
   token: string,
