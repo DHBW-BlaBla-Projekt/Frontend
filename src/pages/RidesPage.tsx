@@ -10,6 +10,11 @@ const dateFormatter = new Intl.DateTimeFormat('de-DE', {
   timeStyle: 'short',
 })
 
+const currencyFormatter = new Intl.NumberFormat('de-DE', {
+  style: 'currency',
+  currency: 'EUR',
+})
+
 export function RidesPage() {
   const { auth } = useAuth()
   const navigate = useNavigate()
@@ -136,7 +141,11 @@ export function RidesPage() {
                       event.stopPropagation()
                       void handleBookRide(ride)
                     }}>
-                      {bookingRideId === ride.id ? 'Buchung...' : 'Fahrt buchen'}
+                      {bookingRideId === ride.id
+                        ? 'Buchung...'
+                        : ride.estimatedCost != null
+                          ? `Buchen (${currencyFormatter.format(ride.estimatedCost)})`
+                          : 'Buchen'}
                     </button>
                   )
                 ) : (

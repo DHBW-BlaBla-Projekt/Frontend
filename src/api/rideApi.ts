@@ -10,6 +10,7 @@ export interface Ride {
   departureTime: string
   availableSeats: number
   status: string
+  estimatedCost: number | null
   startLatitude: number | null
   startLongitude: number | null
   endLatitude: number | null
