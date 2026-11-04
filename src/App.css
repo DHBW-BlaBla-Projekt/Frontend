@@ -391,6 +391,8 @@ button:disabled {
 
 .site-footer-inner {
   display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
   justify-content: flex-end;
 }
 
