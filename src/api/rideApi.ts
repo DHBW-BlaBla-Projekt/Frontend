@@ -39,3 +39,9 @@ export function createRide(
     body: JSON.stringify(request),
   }, token)
 }
+
+export function cancelRide(rideId: number, token: string) {
+  return apiRequest<Ride>(RIDE_URL, `/api/rides/${rideId}/cancel`, {
+    method: 'PATCH',
+  }, token)
+}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { createBooking } from '../api/bookingApi'
-import { getAvailableRides, type Ride } from '../api/rideApi'
+import { cancelRide, getAvailableRides, type Ride } from '../api/rideApi'
 import { RouteMap } from '../components/RouteMap'
 import { useAuth } from '../context/useAuth'
 
@@ -22,6 +22,7 @@ export function RidesPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [bookingRideId, setBookingRideId] = useState<number | null>(null)
+  const [cancellingRideId, setCancellingRideId] = useState<number | null>(null)
   const [expandedRideId, setExpandedRideId] = useState<number | null>(null)
 
   function hasRoute(ride: Ride) {
@@ -76,6 +77,22 @@ export function RidesPage() {
       setError(reason instanceof Error ? reason.message : 'Die Buchung konnte nicht erstellt werden.')
     } finally {
       setBookingRideId(null)
+    }
+  }
+
+  async function handleCancelRide(ride: Ride) {
+    if (!auth) return
+
+    setCancellingRideId(ride.id)
+    setError('')
+
+    try {
+      await cancelRide(ride.id, auth.accessToken)
+      await loadRides()
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Die Fahrt konnte nicht storniert werden.')
+    } finally {
+      setCancellingRideId(null)
     }
   }
 
@@ -135,7 +152,12 @@ export function RidesPage() {
               <div className="ride-actions">
                 {auth ? (
                   ride.driverUsername === auth.username ? (
-                    <span className="ride-badge">Deine Fahrt</span>
+                    <button type="button" disabled={cancellingRideId === ride.id} onClick={(event) => {
+                      event.stopPropagation()
+                      void handleCancelRide(ride)
+                    }}>
+                      {cancellingRideId === ride.id ? 'Storniere...' : 'Stornieren'}
+                    </button>
                   ) : (
                     <button type="button" disabled={bookingRideId === ride.id} onClick={(event) => {
                       event.stopPropagation()
