@@ -382,3 +382,60 @@ button:disabled {
   background: #e7e5e4;
   color: var(--ink);
 }
+
+.site-footer {
+  border-top: 1px solid var(--line);
+  margin-top: 32px;
+  padding: 20px 0;
+}
+
+.site-footer-inner {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.site-footer a {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  color: var(--accent-dark);
+  text-decoration: underline;
+}
+
+.impressum {
+  max-width: 720px;
+}
+
+.impressum h1 {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+}
+
+.impressum section {
+  margin-top: 32px;
+}
+
+.impressum h2 {
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+}
+
+.impressum address {
+  font-style: normal;
+}
+
+.impressum p {
+  line-height: 1.6;
+  margin: 4px 0;
+}
+
+.impressum-notice {
+  background: var(--soft);
+  border-radius: 9px;
+  color: var(--accent-dark);
+  margin-top: 32px !important;
+  padding: 14px 16px;
+}
