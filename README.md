@@ -1,4 +1,4 @@
-# BlaBla Frontend
+# BlaBla Frontend v1
 
 React + Vite + TypeScript frontend for the BlaBla carpooling project.
 
